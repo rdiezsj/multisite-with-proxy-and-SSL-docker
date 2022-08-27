@@ -1,0 +1,9 @@
+#IDEs
+.vscode
+.idea
+
+#nginx default config
+vhost/default
+
+#private environment
+.env

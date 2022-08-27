@@ -1,0 +1,129 @@
+version: '3.7'
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - html:/usr/share/nginx/html
+      - dhparam:/etc/nginx/dhparam
+      - ./vhost:/etc/nginx/vhost.d
+      - certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./client_max_upload_size.conf:/etc/nginx/conf.d/client_max_upload_size.conf
+    labels:
+      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
+    restart: always
+    networks:
+      - multisite-net
+
+  letsencrypt:
+    env_file: .env
+    image: nginxproxy/acme-companion
+    container_name: acme-companion
+    depends_on:
+      - "nginx-proxy"
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - ./vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      DEFAULT_EMAIL: $MAIL
+    restart: always
+    networks:
+      - multisite-net
+
+  mysqldb1:
+    env_file: .env
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: $S1_MYSQL_DATABASE
+      MYSQL_USER: $S1_MYSQL_USER
+      MYSQL_PASSWORD: $S1_MYSQL_PASSWORD
+      MYSQL_ROOT_PASSWORD: $S1_MYSQL_ROOT_PASSWORD
+    volumes:
+      - 'mysqldb1:/var/lib/mysql'
+    restart: always
+    networks:
+      - mysqldb1
+
+  wordpress1:
+    env_file: .env
+    image: wordpress:php8.0-apache
+    environment:
+      WORDPRESS_DB_HOST: mysqldb1
+      WORDPRESS_DB_USER: $S1_MYSQL_USER
+      WORDPRESS_DB_PASSWORD: $S1_MYSQL_PASSWORD
+      WORDPRESS_DB_NAME: $S1_MYSQL_DATABASE
+      WORDPRESS_CONFIG_EXTRA: |
+        define('AUTOMATIC_UPDATER_DISABLED', true);
+      VIRTUAL_HOST: $S1_DOMAIN,www.$S1_DOMAIN
+      LETSENCRYPT_HOST: $S1_DOMAIN,www.$S1_DOMAIN
+    volumes:
+      - 'wordpress1:/var/www/html/wp-content'
+      - './uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
+    restart: always
+    depends_on:
+      - mysqldb1
+    networks:
+      - mysqldb1
+      - multisite-net
+
+
+  mysqldb2:
+    env_file: .env
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: $S2_MYSQL_DATABASE
+      MYSQL_USER: $S2_MYSQL_USER
+      MYSQL_PASSWORD: $S2_MYSQL_PASSWORD
+      MYSQL_ROOT_PASSWORD: $S2_MYSQL_ROOT_PASSWORD
+    volumes:
+      - 'mysqldb2:/var/lib/mysql'
+    restart: always
+    networks:
+      - mysqldb2
+
+  wordpress2:
+    env_file: .env
+    image: wordpress:php8.0-apache
+    environment:
+      WORDPRESS_DB_HOST: mysqldb2
+      WORDPRESS_DB_USER: $S2_MYSQL_USER
+      WORDPRESS_DB_PASSWORD: $S2_MYSQL_PASSWORD
+      WORDPRESS_DB_NAME: $S2_MYSQL_DATABASE
+      WORDPRESS_CONFIG_EXTRA: |
+        define('AUTOMATIC_UPDATER_DISABLED', true);
+      VIRTUAL_HOST: $S2_DOMAIN
+      LETSENCRYPT_HOST: $S2_DOMAIN
+    volumes:
+      - 'wordpress2:/var/www/html/wp-content'
+      - './uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
+    restart: always
+    depends_on:
+      - mysqldb2
+    networks:
+      - mysqldb2
+      - multisite-net
+
+volumes:
+  certs:
+  html:
+  dhparam:
+  acme:
+  mysqldb1:
+  wordpress1:
+  mysqldb2:
+  wordpress2:
+
+networks:
+  mysqldb1:
+    internal: true
+  mysqldb2:
+    internal: true
+  multisite-net:
+    external: true
