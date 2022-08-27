@@ -15,20 +15,25 @@ docker network create multisite-net
 
 ## Environment file
 
-Docker Compose expects the MySQL root password, the WordPress database name, username and password as environment variables in a `.env` file in the same directory.
+Docker-Compose expects the domain name for each of the sites, MySQL root password, and the WordPress database name, username and password, as environment variables in a `.env` file in the root directory.
+Also it is mandatory to especify the e-mail in order to user de Letsencrypt cert.
 
 Create the .env file.
 
-$ nano /app/docker-compose-wordpress-nginx-mysql/.env
-And define the credentials accordingly.
+```bash
+nano /<PATH>/.env
+```
 
-# MySQL root password
-MYSQL_ROOT_PASSWORD='(redacted)'
-
-# WordPress database name, username and password
-MYSQL_WORDPRESS_DATABASE='kurtcms_org'
-MYSQL_WORDPRESS_USER='kurtcms_org'
-MYSQL_WORDPRESS_PASSWORD='(redacted)'
+And define the credentials.
+```bash
+MAIL='mymail@mailfake.com'
+## site 1
+S1_DOMAIN='test1.fake.com'
+S1_MYSQL_DATABASE='db1'
+S1_MYSQL_USER='db1_user'
+S1_MYSQL_PASSWORD='db1_password'
+S1_MYSQL_ROOT_PASSWORD='db1_root'
+````
 
 ## Start / Stop
 
