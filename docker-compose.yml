@@ -40,6 +40,7 @@ services:
   mysqldb1:
     env_file: .env
     image: mysql:latest
+    container_name: mysqldb1
     environment:
       MYSQL_DATABASE: $S1_MYSQL_DATABASE
       MYSQL_USER: $S1_MYSQL_USER
@@ -54,6 +55,7 @@ services:
   wordpress1:
     env_file: .env
     image: wordpress:php8.0-apache
+    container_name: wordpress1
     environment:
       WORDPRESS_DB_HOST: mysqldb1
       WORDPRESS_DB_USER: $S1_MYSQL_USER
@@ -61,8 +63,8 @@ services:
       WORDPRESS_DB_NAME: $S1_MYSQL_DATABASE
       WORDPRESS_CONFIG_EXTRA: |
         define('AUTOMATIC_UPDATER_DISABLED', true);
-      VIRTUAL_HOST: $S1_DOMAIN,www.$S1_DOMAIN
-      LETSENCRYPT_HOST: $S1_DOMAIN,www.$S1_DOMAIN
+      VIRTUAL_HOST: $S1_DOMAIN
+      LETSENCRYPT_HOST: $S1_DOMAIN
     volumes:
       - 'wordpress1:/var/www/html/wp-content'
       - './uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
@@ -73,41 +75,19 @@ services:
       - mysqldb1
       - multisite-net
 
-
-  mysqldb2:
-    env_file: .env
-    image: mysql:latest
+  dokuwiki:
+    image: linuxserver/dokuwiki
+    container_name: dokuwiki
     environment:
-      MYSQL_DATABASE: $S2_MYSQL_DATABASE
-      MYSQL_USER: $S2_MYSQL_USER
-      MYSQL_PASSWORD: $S2_MYSQL_PASSWORD
-      MYSQL_ROOT_PASSWORD: $S2_MYSQL_ROOT_PASSWORD
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+      - VIRTUAL_HOST=$S2_DOMAIN
+      - LETSENCRYPT_HOST=$S2_DOMAIN
     volumes:
-      - 'mysqldb2:/var/lib/mysql'
-    restart: always
+      - dokuwiki1:/config
+    restart: unless-stopped
     networks:
-      - mysqldb2
-
-  wordpress2:
-    env_file: .env
-    image: wordpress:php8.0-apache
-    environment:
-      WORDPRESS_DB_HOST: mysqldb2
-      WORDPRESS_DB_USER: $S2_MYSQL_USER
-      WORDPRESS_DB_PASSWORD: $S2_MYSQL_PASSWORD
-      WORDPRESS_DB_NAME: $S2_MYSQL_DATABASE
-      WORDPRESS_CONFIG_EXTRA: |
-        define('AUTOMATIC_UPDATER_DISABLED', true);
-      VIRTUAL_HOST: $S2_DOMAIN
-      LETSENCRYPT_HOST: $S2_DOMAIN
-    volumes:
-      - 'wordpress2:/var/www/html/wp-content'
-      - './uploads.ini:/usr/local/etc/php/conf.d/uploads.ini'
-    restart: always
-    depends_on:
-      - mysqldb2
-    networks:
-      - mysqldb2
       - multisite-net
 
 volumes:
@@ -117,13 +97,10 @@ volumes:
   acme:
   mysqldb1:
   wordpress1:
-  mysqldb2:
-  wordpress2:
+  dokuwiki1:
 
 networks:
   mysqldb1:
-    internal: true
-  mysqldb2:
     internal: true
   multisite-net:
     external: true

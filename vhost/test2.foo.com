@@ -1,0 +1,1 @@
+rewrite ^/(.*)$ https://www.test2.foo.com/$1 permanent;
