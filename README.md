@@ -356,3 +356,10 @@ Surely you find it interesting to make a backup of the volumes to be able to rec
 ├── multisite_mysqldb1
 └── multisite_wordpress1
 ```
+
+## Credits
+
+This would not have been possible without the contributions of:
+- https://github.com/nginx-proxy/nginx-proxy
+- https://github.com/offen/docker-volume-backup
+- https://github.com/nginx-proxy/acme-companion
