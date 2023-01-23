@@ -22,12 +22,12 @@ If you are using a DDNS service, make sure the records point to the correct IP
 
 **DNS records**
 
-| Type  | Hostname               | Value                             |
-| ----- |------------------------|-----------------------------------|
-| A     | `test1.fake.com`       | directs to IP address `X.X.X.X`   |
-| A     | `test2.foo.com`        | directs to IP address `X.X.X.X`   |
-| CNAME | `www.test1.fake.com`   | is an alias of `test1.fake.com`   |
-| CNAME | `www.test2.foo.com`    | is an alias of `test2.foo.com`    |
+| Type  | Hostname             | Value                           |
+|-------|----------------------|---------------------------------|
+| A     | `test1.fake.com`     | directs to IP address `X.X.X.X` |
+| A     | `test2.foo.com`      | directs to IP address `X.X.X.X` |
+| CNAME | `www.test1.fake.com` | is an alias of `test1.fake.com` |
+| CNAME | `www.test2.foo.com`  | is an alias of `test2.foo.com`  |
 
 
 ### Edit domain names and email in the configuration files
@@ -316,7 +316,7 @@ create a systemd service:
 sudo nano /etc/systemd/system/docker-compose-multisite.service 
 ```
 
-Whith this content. Be aware of point the `WorkingDirectory` to your real docker-compose.yml folder
+With this content. Be aware of point the `WorkingDirectory` to your real docker-compose.yml folder
 
 ```bash
 [Unit]
